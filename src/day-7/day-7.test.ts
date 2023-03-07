@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { toDirectoryListing } from './part-1'
+import { readInputForDay } from '../utils'
+import { findDirectoriesOfMaxSize, toDirectoryListing } from './part-1'
 
 const INPUT = `$ cd /
 $ ls
@@ -27,40 +28,53 @@ $ ls
 `
 
 describe('part-1', () => {
-  const subject = () => toDirectoryListing(INPUT)
+  describe('sanity checks', () => {
+    const subject = () => toDirectoryListing(INPUT)
+    /**
+     * Given the commands and output in the example above, you can determine that the filesystem looks visually like this:
+     *
+     * - / (dir)
+     *   - a (dir)
+     *     - e (dir)
+     *       - i (file, size=584)
+     *     - f (file, size=29116)
+     *     - g (file, size=2557)
+     *     - h.lst (file, size=62596)
+     *   - b.txt (file, size=14848514)
+     *   - c.dat (file, size=8504156)
+     *   - d (dir)
+     *     - j (file, size=4060174)
+     *     - d.log (file, size=8033020)
+     *     - d.ext (file, size=5626152)
+     *     - k (file, size=7214296)
+     */
 
-  /**
-   * Given the commands and output in the example above, you can determine that the filesystem looks visually like this:
-   *
-   * - / (dir)
-   *   - a (dir)
-   *     - e (dir)
-   *       - i (file, size=584)
-   *     - f (file, size=29116)
-   *     - g (file, size=2557)
-   *     - h.lst (file, size=62596)
-   *   - b.txt (file, size=14848514)
-   *   - c.dat (file, size=8504156)
-   *   - d (dir)
-   *     - j (file, size=4060174)
-   *     - d.log (file, size=8033020)
-   *     - d.ext (file, size=5626152)
-   *     - k (file, size=7214296)
-   */
+    //  The total size of directory e is 584 because it contains a single file i of size 584 and no other directories.
+    test('directory e has a total size of 584...', () =>
+      expect(subject().cd('a', 'e').size).toEqual(584))
 
-  //  The total size of directory e is 584 because it contains a single file i of size 584 and no other directories.
-  test('directory e has a total size of 584...', () =>
-    expect(subject().cd('a', 'e').size).toEqual(584))
+    // The directory a has total size 94853 because it contains files f (size 29116), g (size 2557), and h.lst (size 62596), plus file i indirectly (a contains e which contains i).
+    test('directory a has total size 94853...', () =>
+      expect(subject().cd('a').size).toEqual(94853))
 
-  // The directory a has total size 94853 because it contains files f (size 29116), g (size 2557), and h.lst (size 62596), plus file i indirectly (a contains e which contains i).
-  test('directory a has total size 94853...', () =>
-    expect(subject().cd('a').size).toEqual(94853))
+    // Directory d has total size 24933642.
+    test('directory d has total size 24933642...', () =>
+      expect(subject().cd('d').size).toEqual(24933642))
 
-  // Directory d has total size 24933642.
-  test('directory d has total size 24933642...', () =>
-    expect(subject().cd('d').size).toEqual(24933642))
+    // As the outermost directory, / contains every file. Its total size is 48381165, the sum of the size of every file.
+    test('root has a total size of 48381165...', () =>
+      expect(subject().size).toEqual(48381165))
+  })
 
-  // As the outermost directory, / contains every file. Its total size is 48381165, the sum of the size of every file.
-  test('root has a total size of 48381165...', () =>
-    expect(subject().size).toEqual(48381165))
+  // Find all of the directories with a total size of at most 100000.
+  // What is the sum of the total sizes of those directories?
+  test('main', async () => {
+    const input = await readInputForDay(7)
+    const root = toDirectoryListing(input)
+
+    const matchedDirs = findDirectoriesOfMaxSize(100000, root)
+    const sum = matchedDirs.reduce((a, b) => a + b.size, 0)
+
+    expect(sum).toEqual(1749646)
+  })
 })

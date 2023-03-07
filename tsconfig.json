@@ -1,6 +1,9 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "src"
-  }
+    "baseUrl": "src",
+    "module": "ESNext",
+    "moduleResolution": "node"
+  },
+  "include": ["src"]
 }

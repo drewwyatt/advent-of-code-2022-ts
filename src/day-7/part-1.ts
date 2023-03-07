@@ -2,7 +2,7 @@ import { Command, Response, parseLine } from './input'
 
 class Directory {
   parent: Directory
-  directories: Record<string, Directory> = {}
+  #directories: Record<string, Directory> = {}
   #size: number | null = null
   #files: Record<string, number> = {}
 
@@ -20,7 +20,7 @@ class Directory {
   cd(...keys: string[]) {
     let cursor: Directory = this
     for (const key of keys) {
-      cursor = cursor.directories[key] ??= new Directory(cursor)
+      cursor = cursor.#directories[key] ??= new Directory(cursor)
     }
 
     return cursor
@@ -32,12 +32,12 @@ class Directory {
 
   get size(): number {
     return (this.#size ??=
-      this.#dirList.reduce((a, b) => a + b.size, 0) +
+      this.subDirs.reduce((a, b) => a + b.size, 0) +
       this.#fileList.reduce((a, b) => a + b, 0))
   }
 
-  get #dirList(): Directory[] {
-    return Object.values(this.directories)
+  get subDirs(): Directory[] {
+    return Object.values(this.#directories)
   }
 
   get #fileList(): number[] {
@@ -67,4 +67,18 @@ export const toDirectoryListing = (input: string): Directory => {
   }
 
   return root
+}
+
+export const findDirectoriesOfMaxSize = (maxSize: number, root: Directory) => {
+  const acc = []
+
+  if (root.size <= maxSize) {
+    acc.push(root)
+  }
+
+  const children: Directory[] = root.subDirs.flatMap(dir =>
+    findDirectoriesOfMaxSize(maxSize, dir),
+  )
+
+  return acc.concat(children)
 }

@@ -10,7 +10,7 @@ class Directory {
     this.parent = parent
   }
 
-  public static Root(): Directory {
+  static Root(): Directory {
     const dir: Directory = new (Directory as any)()
     dir.parent = dir // circular reference (can't go any higher than root)
 

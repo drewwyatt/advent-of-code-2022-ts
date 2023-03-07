@@ -50,15 +50,15 @@ describe('part-1', () => {
 
   //  The total size of directory e is 584 because it contains a single file i of size 584 and no other directories.
   test('directory e has a total size of 584...', () =>
-    expect(subject().contents.a?.contents.e?.size).toEqual(584))
+    expect(subject().cd('a', 'e').size).toEqual(584))
 
   // The directory a has total size 94853 because it contains files f (size 29116), g (size 2557), and h.lst (size 62596), plus file i indirectly (a contains e which contains i).
   test('directory a has total size 94853...', () =>
-    expect(subject().contents.a?.size).toEqual(94853))
+    expect(subject().cd('a').size).toEqual(94853))
 
   // Directory d has total size 24933642.
   test('directory d has total size 24933642...', () =>
-    expect(subject().contents.d?.size).toEqual(24933642))
+    expect(subject().cd('d').size).toEqual(24933642))
 
   // As the outermost directory, / contains every file. Its total size is 48381165, the sum of the size of every file.
   test('root has a total size of 48381165...', () =>

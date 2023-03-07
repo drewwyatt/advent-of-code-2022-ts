@@ -1,3 +1,5 @@
+import { Command, Response, parseLine } from './input'
+
 class Directory {
   parent: Directory
   directories: Record<string, Directory> = {}
@@ -24,6 +26,10 @@ class Directory {
     return cursor
   }
 
+  addFile(name: string, size: number) {
+    this.#files[name] = size
+  }
+
   get size(): number {
     return (this.#size ??=
       this.#dirList.reduce((a, b) => a + b.size, 0) +
@@ -39,29 +45,26 @@ class Directory {
   }
 }
 
-enum Command {
-  cdChild,
-  cdParent,
-  cdRoot,
-  ls,
-}
+export const toDirectoryListing = (input: string): Directory => {
+  const root = Directory.Root()
+  let cursor = root
 
-enum Response {
-  directory,
-  file,
-}
+  for (const line of input.split('\n')) {
+    if (!line) continue
+    const result = parseLine(line)
+    switch (result.type) {
+      case Command.cdChild:
+        cursor = cursor.cd(result.args.dirname)
+        break
+      case Command.cdParent:
+        cursor = cursor.parent
+        break
+      case Response.file:
+        cursor.addFile(result.args.name, result.args.size)
+        break
+      default:
+    }
+  }
 
-const matchers = {
-  command: {
-    [Command.cdChild]: /^\$ cd (?<dirname>\w+)/,
-    [Command.cdParent]: /^\$ cd ../,
-    [Command.cdRoot]: /^\$ cd \//,
-    [Command.ls]: /^\$ ls/,
-  },
-  response: {
-    [Response.directory]: /^dir (?<dirname>\w+)/,
-    [Response.file]: /^(?<size>\d+) (?<name>[\w\.]+)/,
-  },
+  return root
 }
-
-export const toDirectoryListing = (input: string): Directory => Directory.Root()

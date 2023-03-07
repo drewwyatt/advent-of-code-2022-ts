@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { DirectoryListing, toDirectoryListing } from './part-1'
+import { toDirectoryListing } from './part-1'
 
 const INPUT = `$ cd /
 $ ls

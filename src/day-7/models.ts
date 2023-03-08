@@ -1,17 +1,19 @@
 import { Command, Response, parseLine } from './input'
 
 export class Directory {
+  name: string
   parent: Directory
   #directories: Record<string, Directory> = {}
   #size: number | null = null
   #files: Record<string, number> = {}
 
-  constructor(parent: Directory) {
+  constructor(name: string, parent: Directory) {
+    this.name = name
     this.parent = parent
   }
 
   static Root(): Directory {
-    const dir: Directory = new (Directory as any)()
+    const dir: Directory = new (Directory as any)('/')
     dir.parent = dir // circular reference (can't go any higher than root)
 
     return dir
@@ -44,7 +46,7 @@ export class Directory {
   cd(...keys: string[]) {
     let cursor: Directory = this
     for (const key of keys) {
-      cursor = cursor.#directories[key] ??= new Directory(cursor)
+      cursor = cursor.#directories[key] ??= new Directory(key, cursor)
     }
 
     return cursor

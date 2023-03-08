@@ -1,4 +1,5 @@
-import { describe, test } from 'vitest'
+import { beforeAll, describe, expect, test } from 'vitest'
+import { CPU, Instruction, toInstruction } from './models'
 
 const INPUT = `addx 15
 addx -11
@@ -150,12 +151,20 @@ noop
 
 describe('part-1', () => {
   describe('sanity checks', () => {
+    let instructions: Instruction[]
+    let subject: CPU
+    beforeAll(() => {
+      instructions = INPUT.split('\n').filter(Boolean).map(toInstruction)
+      subject = new CPU(instructions)
+    })
+
     // The 20th cycle occurs in the middle of the second addx -1,
     // so the value of register X is the starting value, 1, plus all of the other addx values up to that point:
     // 1 + 15 - 11 + 6 - 3 + 5 - 1 - 8 + 13 + 4 = 21.
-    test.todo(
-      'During the 20th cycle, register X has the value 21, so the signal strength is 20 * 21 = 420.',
-    )
+    test('During the 20th cycle, register X has the value 21, so the signal strength is 20 * 21 = 420.', () => {
+      expect(subject.registerAtCycle(20)).toEqual(21)
+      expect(subject.signalAtCycle(20)).toEqual(420)
+    })
 
     test.todo(
       'During the 60th cycle, register X has the value 19, so the signal strength is 60 * 19 = 1140.',

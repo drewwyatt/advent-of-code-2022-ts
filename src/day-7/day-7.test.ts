@@ -92,4 +92,12 @@ describe('part-2', () => {
       expect(deletedDir?.size).toEqual(24933642)
     })
   })
+
+  test('main', async () => {
+    const input = await readInputForDay(7)
+    const root = Directory.From(input)
+    const deletedDir = findSmallestDirectoryToDelete(root, root.size)
+
+    expect(deletedDir?.size).toEqual(1498966)
+  })
 })

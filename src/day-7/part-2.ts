@@ -11,13 +11,14 @@ export const findSmallestDirectoryToDelete = (
 ): Directory | null => {
   if (!wouldFreeEnoughSpace(dir, usedSpace)) return null
 
-  const result = dir.subDirs.reduce(
-    (smallestDir, next) =>
-      wouldFreeEnoughSpace(next, usedSpace) && next.size < smallestDir.size
-        ? next
-        : smallestDir,
-    dir,
-  )
+  const result = dir.subDirs.reduce((smallestDir, next) => {
+    if (wouldFreeEnoughSpace(next, usedSpace)) {
+      const nextSmallest = findSmallestDirectoryToDelete(next, usedSpace)!
+      return nextSmallest.size < smallestDir.size ? nextSmallest : smallestDir
+    }
+
+    return smallestDir
+  }, dir)
 
   return result !== dir ? findSmallestDirectoryToDelete(result, usedSpace) : result
 }

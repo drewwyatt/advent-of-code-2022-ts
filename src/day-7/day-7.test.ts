@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { readInputForDay } from '../utils'
-import { findDirectoriesOfMaxSize, toDirectoryListing } from './part-1'
+import { Directory } from './models'
+import { findDirectoriesOfMaxSize } from './part-1'
 
 const INPUT = `$ cd /
 $ ls
@@ -29,7 +30,7 @@ $ ls
 
 describe('part-1', () => {
   describe('sanity checks', () => {
-    const subject = () => toDirectoryListing(INPUT)
+    const subject = () => Directory.From(INPUT)
     /**
      * Given the commands and output in the example above, you can determine that the filesystem looks visually like this:
      *
@@ -70,7 +71,7 @@ describe('part-1', () => {
   // What is the sum of the total sizes of those directories?
   test('main', async () => {
     const input = await readInputForDay(7)
-    const root = toDirectoryListing(input)
+    const root = Directory.From(input)
 
     const matchedDirs = findDirectoriesOfMaxSize(100000, root)
     const sum = matchedDirs.reduce((a, b) => a + b.size, 0)

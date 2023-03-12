@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, test } from 'vitest'
+import { readInputForDay } from '../utils'
 import { CPU, Instruction, toInstruction } from './models'
 
 const INPUT = `addx 15
@@ -179,5 +180,16 @@ describe('part-1', () => {
         expect(subject.signalAtCycle(cycle)).toEqual(sig)
       },
     )
+  })
+
+  // Find the signal strength during the 20th, 60th, 100th, 140th, 180th, and 220th cycles.
+  // What is the sum of these six signal strengths?
+  test('main', async () => {
+    const input = await readInputForDay(10)
+    const instructions = input.split('\n').filter(Boolean).map(toInstruction)
+    const cpu = new CPU(instructions)
+    const sum = [20, 60, 100, 140, 180, 220].reduce((a, b) => a + cpu.signalAtCycle(b), 0)
+
+    expect(sum).toEqual(14920)
   })
 })

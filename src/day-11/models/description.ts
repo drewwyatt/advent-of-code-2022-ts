@@ -1,10 +1,4 @@
-// class Monkey {
-//   items: number[]
-//   #operation: (item: number) => number
-//   #test: (item: number) => boolean
-// }
-
-type Description = {
+export type Description = {
   number: number
   startingItems: number[]
   operation: (worry: number) => number

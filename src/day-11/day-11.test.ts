@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest'
-import { toDescription } from './models'
+import { beforeAll, describe, expect, test } from 'vitest'
+import { toDescription, Description, Game } from './models'
 
 const INPUT = `
 Monkey 0:
@@ -32,12 +32,17 @@ Monkey 3:
 `.trim()
 
 describe('part-1', () => {
-  test('parsing', () => {
+  let descriptions: Description[]
+
+  beforeAll(() => {
     const rawDescriptions = INPUT.split(/\n\s*\n/).filter(Boolean)
-    const parsed = rawDescriptions.map(toDescription)
-    expect(parsed.length).toEqual(4)
+    descriptions = rawDescriptions.map(toDescription)
+  })
+
+  test('parsing', () => {
+    expect(descriptions.length).toEqual(4)
     expect(
-      parsed.every(
+      descriptions.every(
         d =>
           typeof d.number === 'number' &&
           Array.isArray(d.startingItems) &&
@@ -65,7 +70,14 @@ describe('part-1', () => {
       [20, [10, 12, 14, 26, 34], [245, 93, 53, 199, 115], [], []],
     ])(
       `After round %i, the monkeys are holding items with these worry levels:`,
-      (round, ...monkeys) => {},
+      (round, ...monkeys) => {
+        const game = new Game(descriptions)
+        game.playRounds(round)
+
+        for (const [idx, items] of monkeys.entries()) {
+          expect(game.itemsForMonkey(idx)).toEqual(items)
+        }
+      },
     )
 
     // After round 15, the monkeys are holding items with these worry levels:

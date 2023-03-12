@@ -51,8 +51,8 @@ export class CPU {
   }
 
   registerAtCycle(number: number) {
-    while (!this.#cycles[number - 1]) {
-      this.#run()
+    while (typeof this.#cycles[number - 1] != 'number') {
+      this.#run(number)
     }
 
     return this.#cycles[number - 1]
@@ -62,10 +62,13 @@ export class CPU {
     return this.registerAtCycle(number) * number
   }
 
-  #run() {
+  #run(requestedCycle: number) {
     const instruction = this.#instructions.shift() as Mutable<Instruction>
     if (!instruction) {
-      throw new Error('No instrucitons to run')
+      const lastCycle = this.#cycles.length
+      throw new Error(
+        `No instrucitons to run (${requestedCycle} / ${lastCycle}) (requested / last)`,
+      )
     }
 
     // hold work until final cycle
@@ -86,5 +89,72 @@ export class CPU {
 
   get #currentRegister() {
     return this.#cycles[this.#cycles.length - 1]
+  }
+}
+
+/*******
+ * CRT *
+ *******/
+
+type Pixel = '#' | '.'
+
+export class CRT {
+  #cpu: CPU
+  #rows: CRTRow[]
+
+  constructor(cpu: CPU) {
+    this.#cpu = cpu
+    this.#rows = new Array(6).fill(null).map(() => new CRTRow())
+
+    let cycle = 1
+    while (this.#canDraw) {
+      this.#draw(cycle)
+      cycle++
+    }
+  }
+
+  toString() {
+    return this.#rows.map(row => row.toString()).join('\n')
+  }
+
+  #draw(cycle: number) {
+    if (!this.#currentRow) throw new Error('No available rows')
+    this.#currentRow.draw(this.#cpu.registerAtCycle(cycle) - 1)
+  }
+
+  get #currentRow() {
+    return this.#rows.find(r => r.canDraw)
+  }
+
+  get #canDraw() {
+    return this.#rows[this.#rows.length - 1].canDraw
+  }
+}
+
+class CRTRow {
+  #pixels: Pixel[] = []
+
+  draw(spritePosition: number) {
+    if (!this.canDraw) throw new Error('Cannot draw. Row full.')
+    this.#pixels.push(this.#pixelForPosition(spritePosition))
+  }
+
+  toString() {
+    return this.#pixels.join('')
+  }
+
+  get canDraw() {
+    return this.#pixels.length < 40
+  }
+
+  get #cursorPosition() {
+    return this.#pixels.length - 1
+  }
+
+  #pixelForPosition(spritePosition: number): Pixel {
+    return this.#cursorPosition >= spritePosition - 1 &&
+      this.#cursorPosition <= spritePosition + 1
+      ? '#'
+      : '.'
   }
 }

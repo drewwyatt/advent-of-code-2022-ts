@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 import { readInputForDay } from '../utils'
-import { CPU, Instruction, toInstruction } from './models'
+import { CPU, CRT, Instruction, toInstruction } from './models'
 
 const INPUT = `addx 15
 addx -11
@@ -191,5 +191,40 @@ describe('part-1', () => {
     const sum = [20, 60, 100, 140, 180, 220].reduce((a, b) => a + cpu.signalAtCycle(b), 0)
 
     expect(sum).toEqual(14920)
+  })
+})
+
+describe('part-2', () => {
+  const SANITY_IMAGE = `
+##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....`.trim()
+
+  const MAIN_IMAGE = `
+###..#..#..##...##...##..###..#..#.####.
+#..#.#..#.#..#.#..#.#..#.#..#.#..#....#.
+###..#..#.#....#..#.#....###..#..#...#..
+#..#.#..#.#....####.#....#..#.#..#..#...
+#..#.#..#.#..#.#..#.#..#.#..#.#..#.#....
+###...##...##..#..#..##..###...##..####.`.trim()
+
+  test('sanity check', () => {
+    const instructions = INPUT.split('\n').filter(Boolean).map(toInstruction)
+    const cpu = new CPU(instructions)
+    const crt = new CRT(cpu)
+
+    expect(crt.toString()).toEqual(SANITY_IMAGE)
+  })
+
+  test('main', async () => {
+    const input = await readInputForDay(10)
+    const instructions = input.split('\n').filter(Boolean).map(toInstruction)
+    const cpu = new CPU(instructions)
+    const crt = new CRT(cpu)
+
+    expect(crt.toString()).toEqual(MAIN_IMAGE)
   })
 })

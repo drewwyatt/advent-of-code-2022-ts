@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": "src",
     "module": "ESNext",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "noEmit": true
   },
   "include": ["src"]
 }

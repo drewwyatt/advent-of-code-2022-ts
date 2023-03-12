@@ -11,11 +11,10 @@ const addx = (match: RegExpMatchArray) =>
   ({
     type: InstructionType.addx,
     value: Number(match.groups!.value),
-    additionalCycles: 1,
+    cycles: 2,
   } as const)
 
-const noop = (_: RegExpExecArray) =>
-  ({ type: InstructionType.noop, additionalCycles: 0 } as const)
+const noop = (_: RegExpExecArray) => ({ type: InstructionType.noop, cycles: 1 } as const)
 
 export type Instruction = ReturnType<typeof addx | typeof noop>
 
@@ -39,82 +38,53 @@ export const toInstruction = (line: string): Instruction => {
  * CPU *
  *******/
 
-type QueuedCycle = {
-  register?: number
-  instructions: Instruction[]
-}
-
-type Cycle = { register: number; instructions?: Instruction[] }
-
-const firstCycle: Cycle = { register: 1 }
-const toQueuedCycle = (
-  currentCycle: QueuedCycle | undefined,
-  instruction: Instruction | null = null,
-): QueuedCycle => {
-  let cycle = currentCycle ?? { instructions: [] }
-  cycle.instructions ??= []
-
-  if (instruction) {
-    cycle.instructions.push(instruction)
-  }
-
-  return cycle
+type Mutable<Type> = {
+  -readonly [Property in keyof Type]: Type[Property]
 }
 
 export class CPU {
-  #cycles: Cycle[]
+  #cycles: number[] = [1]
+  #instructions: Instruction[]
 
   constructor(instructions: Instruction[]) {
-    this.#cycles = this.#instructionsToCycles(instructions)
+    this.#instructions = instructions
   }
 
   registerAtCycle(number: number) {
-    return this.#cycles[number - 1].register
+    while (!this.#cycles[number - 1]) {
+      this.#run()
+    }
+
+    return this.#cycles[number - 1]
   }
 
   signalAtCycle(number: number) {
     return this.registerAtCycle(number) * number
   }
 
-  #instructionsToCycles(instructions: Instruction[]): Cycle[] {
-    return instructions.reduce<QueuedCycle[]>(
-      (acc: QueuedCycle[], instruction, index) => {
-        acc = this.#queueInstruction(acc, instruction, index)
-        acc = this.#processInstruction(acc, index)
-
-        return acc
-      },
-      [firstCycle] as QueuedCycle[],
-    ) as Cycle[]
-  }
-
-  #queueInstruction(
-    cycles: QueuedCycle[],
-    instruction: Instruction,
-    cycleIndex: number,
-  ): QueuedCycle[] {
-    const index = cycleIndex + instruction.additionalCycles
-    cycles[index] = toQueuedCycle(cycles[cycleIndex], instruction)
-
-    return cycles
-  }
-
-  #processInstruction(cycles: QueuedCycle[], curIndex: number): QueuedCycle[] {
-    if (curIndex === 0) return cycles
-
-    cycles[curIndex] ??= { instructions: [] }
-    const instructions = cycles[curIndex].instructions
-    let register = (cycles as any as Cycle[])[curIndex - 1].register
-
-    for (const instruction of instructions) {
-      switch (instruction?.type) {
-        case InstructionType.addx:
-          register += instruction.value
-          break
-      }
+  #run() {
+    const instruction = this.#instructions.shift() as Mutable<Instruction>
+    if (!instruction) {
+      throw new Error('No instrucitons to run')
     }
 
-    cycles[curIndex].register = register
-    return cycles
+    // hold work until final cycle
+    while (instruction.cycles > 1) {
+      instruction.cycles--
+      this.#cycles.push(this.#currentRegister)
+    }
+
+    switch (instruction.type) {
+      case InstructionType.addx:
+        this.#cycles.push(instruction.value + this.#currentRegister)
+        break
+      default:
+        this.#cycles.push(this.#currentRegister)
+        break
+    }
+  }
+
+  get #currentRegister() {
+    return this.#cycles[this.#cycles.length - 1]
   }
 }

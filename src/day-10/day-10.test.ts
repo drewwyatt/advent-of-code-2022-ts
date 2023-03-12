@@ -166,24 +166,18 @@ describe('part-1', () => {
       expect(subject.signalAtCycle(20)).toEqual(420)
     })
 
-    test.todo(
-      'During the 60th cycle, register X has the value 19, so the signal strength is 60 * 19 = 1140.',
-    )
-
-    test.todo(
-      'During the 100th cycle, register X has the value 18, so the signal strength is 100 * 18 = 1800.',
-    )
-
-    test.todo(
-      'During the 140th cycle, register X has the value 21, so the signal strength is 140 * 21 = 2940.',
-    )
-
-    test.todo(
-      'During the 180th cycle, register X has the value 16, so the signal strength is 180 * 16 = 2880.',
-    )
-
-    test.todo(
-      'During the 220th cycle, register X has the value 18, so the signal strength is 220 * 18 = 3960.',
+    test.each([
+      [60, 19, 1140],
+      [100, 18, 1800],
+      [140, 21, 2940],
+      [180, 16, 2880],
+      [220, 18, 3960],
+    ])(
+      `During the %ith cycle, register X has the value %i, so the signal strength is %i`,
+      (cycle, reg, sig) => {
+        expect(subject.registerAtCycle(cycle)).toEqual(reg)
+        expect(subject.signalAtCycle(cycle)).toEqual(sig)
+      },
     )
   })
 })
